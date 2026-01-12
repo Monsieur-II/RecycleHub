@@ -12,10 +12,11 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Mapster" Version="7.4.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.20" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.20">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.20" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.20">

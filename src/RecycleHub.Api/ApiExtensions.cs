@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using RecycleHub.Api.Services.Interfaces;
+using RecycleHub.Api.Services.Providers;
 using RecycleHub.Pg.Sdk;
 
 namespace RecycleHub.Api;
@@ -19,5 +21,11 @@ public static class ApiExtensions
         {
             await context.Database.MigrateAsync();
         }
+    }
+
+    public static void AddBusinessServices(this IServiceCollection services)
+    {
+        services.AddScoped<IRecyclingCenterService, RecyclingCenterService>();
+        services.AddScoped<ILookUpService, LookUpService>();
     }
 }

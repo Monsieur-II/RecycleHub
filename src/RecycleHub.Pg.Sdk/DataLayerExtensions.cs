@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using RecycleHub.Pg.Sdk.Entities;
 using RecycleHub.Pg.Sdk.Repositories.Interfaces;
 using RecycleHub.Pg.Sdk.Repositories.Providers;
 
@@ -25,6 +26,8 @@ public static class DataLayerExtensions
         }, serviceLifetime);
         
         
+        services.AddScoped<IPgRepository<RecycleCenter>, PgRepository<RecycleCenter>>();
+        services.AddScoped<IPgRepository<Material>, PgRepository<Material>>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
     }
 }

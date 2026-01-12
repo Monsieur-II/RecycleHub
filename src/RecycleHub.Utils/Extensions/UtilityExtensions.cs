@@ -16,6 +16,6 @@ public static class UtilityExtensions
         return JsonConvert.SerializeObject(@object, settings);
     }
     
-    public static ApiResponse<T> ToApiResponse<T>(this T data, string message, int code)
+    public static ApiResponse<T> ToApiResponse<T>(this T? data, string message, int code)
         => new ApiResponse<T>(message, code, data);
 }

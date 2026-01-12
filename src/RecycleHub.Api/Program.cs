@@ -1,8 +1,13 @@
+using System.Reflection;
+using Mapster;
 using Microsoft.AspNetCore.HttpLogging;
 using RecycleHub.Api;
 using RecycleHub.Pg.Sdk;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var config = TypeAdapterConfig.GlobalSettings;
+config.Scan(Assembly.GetExecutingAssembly());
 
 var services = builder.Services;
 
@@ -10,6 +15,8 @@ services.AddEndpointsApiExplorer();
 services.AddSwaggerGen();
 
 services.AddControllers();
+
+services.AddBusinessServices();
 
 services.AddHttpLogging(options =>
 {

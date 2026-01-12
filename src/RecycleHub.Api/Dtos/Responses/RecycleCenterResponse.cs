@@ -1,8 +1,9 @@
-namespace RecycleHub.Pg.Sdk.Entities;
+namespace RecycleHub.Api.Dtos.Responses;
 
-public class RecycleCenter : BaseEntity
+public class RecycleCenterResponse
 {
-    public string Name { get; set; } = null!;
+    public string? Id { get; set; }
+    public string? Name { get; set; }
     public string? Description { get; set; }
     public string? LogoUrl { get; set; }
     public string? PhoneNumber { get; set; }
@@ -14,7 +15,5 @@ public class RecycleCenter : BaseEntity
     public string? Region { get; set; }
     public double Latitude { get; set; }
     public double Longitude { get; set; }
-    public bool IsVerified { get; set; }
-    public bool IsActive { get; set; }
-    public ICollection<Material> Materials { get; set; } = new List<Material>();
-}
+    public List<string> Materials { get; set; } = [];
+};
