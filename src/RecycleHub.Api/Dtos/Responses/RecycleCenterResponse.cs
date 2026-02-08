@@ -15,5 +15,11 @@ public class RecycleCenterResponse
     public string? Region { get; set; }
     public double Latitude { get; set; }
     public double Longitude { get; set; }
-    public List<string> Materials { get; set; } = [];
+    public List<MaterialResponse> Materials { get; set; } = [];
 };
+
+public class MaterialResponse
+{
+    public string? Id { get; set; }
+    public string? Name { get; set; }
+}

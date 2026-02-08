@@ -4,6 +4,7 @@ using RecycleHub.Api.Dtos.Requests;
 using RecycleHub.Api.Dtos.Responses;
 using RecycleHub.Api.Services.Interfaces;
 using RecycleHub.Pg.Sdk;
+using RecycleHub.Pg.Sdk.Dtos;
 using RecycleHub.Pg.Sdk.Entities;
 using RecycleHub.Pg.Sdk.Repositories.Interfaces;
 using RecycleHub.Utils;
@@ -14,7 +15,7 @@ namespace RecycleHub.Api.Services.Providers;
 public class RecyclingCenterService(ILogger<RecyclingCenterService> logger,
     IUnitOfWork unitOfWork) : IRecyclingCenterService
 {
-    public async Task<ApiResponse<List<RecycleCenterResponse>>> GetAllAsync(CenterFilter filter, CancellationToken ct = default)
+    public async Task<ApiResponse<PagedResponse<RecycleCenterResponse>>> GetAllAsync(CenterFilter filter, CancellationToken ct = default)
     {
         try
         {
@@ -37,7 +38,7 @@ public class RecyclingCenterService(ILogger<RecyclingCenterService> logger,
         {
             logger.LogError(e, "Error fetching recycle centers: {Message}", e.Message);
             
-            return ApiResponse<List<RecycleCenterResponse>>.Fail();
+            return ApiResponse<PagedResponse<RecycleCenterResponse>>.Fail();
         }
     }
     
@@ -148,14 +149,14 @@ public class RecyclingCenterService(ILogger<RecyclingCenterService> logger,
         }
     }
 
-    private static List<RecycleCenterResponse> GetCloseByCenters(CenterFilter filter, List<RecycleCenterResponse> recycleCenters)
+    private static PagedResponse<RecycleCenterResponse> GetCloseByCenters(CenterFilter filter, PagedResponse<RecycleCenterResponse> pagedRecycleCenters)
     {
-        
+        var recycleCenters = pagedRecycleCenters.Results.ToList();   
         var closeByCenters = new List<RecycleCenterResponse>();
         
         if (filter is not { Longitude: not null, Latitude: not null })
         {
-            return recycleCenters;
+            return pagedRecycleCenters;
         }
         
         var lon = filter.Longitude!.Value;
@@ -171,6 +172,6 @@ public class RecyclingCenterService(ILogger<RecyclingCenterService> logger,
             }
         }
         
-        return closeByCenters;
+        return closeByCenters.ToPagedResponse( filter.PageIndex, filter.PageSize, recycleCenters.Count);
     }
 }

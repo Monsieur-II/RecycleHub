@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using RecycleHub.Pg.Sdk.Dtos;
 using RecycleHub.Pg.Sdk.Entities;
 
 namespace RecycleHub.Pg.Sdk.Repositories.Interfaces;
@@ -13,11 +14,11 @@ public interface IPgRepository<T> where T : class
     Task<T?> GetByIdAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IQueryable<T>>? include = null,
         CancellationToken ct = default);
 
-    Task<List<TResponse>> GetRecycleCentersAsync<TResponse>(PageFilter filter,
+    Task<PagedResponse<TResponse>> GetRecycleCentersAsync<TResponse>(PageFilter filter,
         Expression<Func<RecycleCenter, bool>>? predicate = null, CancellationToken ct = default)
         where TResponse : class;
 
-    Task<List<TResponse>> GetPageAsync<TResponse>(PageFilter filter, Expression<Func<T, bool>>? predicate = null,
+    Task<PagedResponse<TResponse>> GetPageAsync<TResponse>(PageFilter filter, Expression<Func<T, bool>>? predicate = null,
         CancellationToken ct = default)
         where TResponse : class;
 

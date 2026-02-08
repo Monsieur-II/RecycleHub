@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using RecycleHub.Pg.Sdk.Dtos;
 using RecycleHub.Pg.Sdk.Entities;
 using RecycleHub.Pg.Sdk.Repositories.Interfaces;
 
@@ -62,7 +63,7 @@ public class PgRepository<T>(ApplicationDbContext dbContext) : IPgRepository<T>
             .FirstOrDefaultAsync(ct);
     }
 
-    public virtual async Task<List<TResponse>> GetPageAsync<TResponse>(PageFilter filter, Expression<Func<T, bool>>? predicate = null, CancellationToken ct = default)
+    public virtual async Task<PagedResponse<TResponse>> GetPageAsync<TResponse>(PageFilter filter, Expression<Func<T, bool>>? predicate = null, CancellationToken ct = default)
         where TResponse : class
     {
         var pred = predicate ?? (x => true);
@@ -75,7 +76,12 @@ public class PgRepository<T>(ApplicationDbContext dbContext) : IPgRepository<T>
                 .ProjectToType<TResponse>()
                 .ToListAsync(ct);
         
-        return query;
+        var totalCount = await GetBaseQuery()
+            .Where(pred)
+            .AsNoTracking()
+            .LongCountAsync(ct);
+        
+        return query.ToPagedResponse(filter.PageIndex, filter.PageSize, totalCount);
     }
     
     public virtual async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken ct = default)
@@ -100,7 +106,7 @@ public class PgRepository<T>(ApplicationDbContext dbContext) : IPgRepository<T>
         return res;
     }
 
-    public virtual async Task<List<TResponse>> GetRecycleCentersAsync<TResponse>(PageFilter filter,
+    public virtual async Task<PagedResponse<TResponse>> GetRecycleCentersAsync<TResponse>(PageFilter filter,
         Expression<Func<RecycleCenter, bool>>? predicate = null, CancellationToken ct = default) where TResponse : class
 
     {
@@ -115,6 +121,11 @@ public class PgRepository<T>(ApplicationDbContext dbContext) : IPgRepository<T>
             .ProjectToType<TResponse>()
             .ToListAsync(ct);
 
-        return query;
+        var totalCount = await dbContext.RecycleCenters
+            .Where(pred)
+            .AsNoTracking()
+            .LongCountAsync(ct);
+        
+        return query.ToPagedResponse(filter.PageIndex, filter.PageSize, totalCount);
     }
 }

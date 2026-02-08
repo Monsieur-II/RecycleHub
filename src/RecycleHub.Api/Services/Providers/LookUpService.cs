@@ -2,6 +2,7 @@ using Mapster;
 using RecycleHub.Api.Dtos.Requests;
 using RecycleHub.Api.Services.Interfaces;
 using RecycleHub.Pg.Sdk;
+using RecycleHub.Pg.Sdk.Dtos;
 using RecycleHub.Pg.Sdk.Entities;
 using RecycleHub.Pg.Sdk.Repositories.Interfaces;
 using RecycleHub.Utils;

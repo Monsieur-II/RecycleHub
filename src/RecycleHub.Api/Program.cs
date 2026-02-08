@@ -6,6 +6,17 @@ using RecycleHub.Pg.Sdk;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// cors: should allow requests from any origin
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var config = TypeAdapterConfig.GlobalSettings;
 config.Scan(Assembly.GetExecutingAssembly());
 

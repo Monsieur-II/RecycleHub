@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using RecycleHub.Pg.Sdk.Dtos;
 using RecycleHub.Pg.Sdk.Entities;
 using RecycleHub.Pg.Sdk.Repositories.Interfaces;
 using RecycleHub.Pg.Sdk.Repositories.Providers;
@@ -29,5 +30,12 @@ public static class DataLayerExtensions
         services.AddScoped<IPgRepository<RecycleCenter>, PgRepository<RecycleCenter>>();
         services.AddScoped<IPgRepository<Material>, PgRepository<Material>>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+    }
+
+    public static PagedResponse<T> ToPagedResponse<T>(this IEnumerable<T> result, int pageIndex, int pageSize,
+        long count = 0)
+        where T : class
+    {
+        return new PagedResponse<T>(result, pageIndex, pageSize, count);
     }
 }

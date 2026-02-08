@@ -1,4 +1,4 @@
-namespace RecycleHub.Pg.Sdk;
+namespace RecycleHub.Pg.Sdk.Dtos;
 
 public class LookUpResponse
 {
