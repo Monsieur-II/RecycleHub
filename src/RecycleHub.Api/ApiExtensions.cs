@@ -9,9 +9,8 @@ public static class ApiExtensions
 {
     public static async Task ApplyPendingMigrations(this WebApplication app)
     {
-        var scope = app.Services.CreateScope();
-        var scopedServiceProvider = scope.ServiceProvider;
-        var context = scopedServiceProvider.GetRequiredService<ApplicationDbContext>();
+        using var scope = app.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         // await context.Database.EnsureCreatedAsync();
 
