@@ -12,8 +12,8 @@ public static class ApiExtensions
         var scope = app.Services.CreateScope();
         var scopedServiceProvider = scope.ServiceProvider;
         var context = scopedServiceProvider.GetRequiredService<ApplicationDbContext>();
-        
-        await context.Database.EnsureCreatedAsync();
+
+        // await context.Database.EnsureCreatedAsync();
 
         var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
 
