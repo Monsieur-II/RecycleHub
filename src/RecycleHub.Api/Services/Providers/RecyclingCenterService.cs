@@ -26,6 +26,9 @@ public class RecyclingCenterService(ILogger<RecyclingCenterService> logger,
                 predicate = predicate.And(x => x.Materials.Any(m => m.Id == filter.MaterialId));
             }
             
+            if (!string.IsNullOrWhiteSpace(filter.Search))
+                predicate = predicate.And(x => x.Name.ToLower().Contains(filter.Search.ToLower()));
+            
             
             var result = await unitOfWork.RecycleCenters.GetRecycleCentersAsync<RecycleCenterResponse>(filter, predicate,  ct: ct);
             
@@ -39,6 +42,30 @@ public class RecyclingCenterService(ILogger<RecyclingCenterService> logger,
             logger.LogError(e, "Error fetching recycle centers: {Message}", e.Message);
             
             return ApiResponse<PagedResponse<RecycleCenterResponse>>.Fail();
+        }
+    }
+
+    public async Task<ApiResponse<RecycleCenterResponse>> GetByIdAsync(string id, CancellationToken ct = default)
+    {
+        try
+        {
+            var center = await unitOfWork.RecycleCenters.GetByIdAsync(
+                x => x.Id == id,
+                include: q => q.Include(c => c.Materials).AsNoTracking(),
+                ct: ct);
+
+            if (center == null)
+            {
+                return ApiResponse<RecycleCenterResponse>.Fail("Center not found", StatusCodes.Status404NotFound);
+            }
+
+            var response = center.Adapt<RecycleCenterResponse>();
+            return response.ToApiResponse("Success", StatusCodes.Status200OK);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error fetching recycle center {Id}: {Message}", id, e.Message);
+            return ApiResponse<RecycleCenterResponse>.Fail();
         }
     }
     

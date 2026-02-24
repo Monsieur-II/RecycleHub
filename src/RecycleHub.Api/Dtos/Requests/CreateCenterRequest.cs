@@ -14,6 +14,7 @@ public class CreateRecycleCenterRequest
     public string? Region { get; set; }
     public double Latitude { get; set; }
     public double Longitude { get; set; }
+    public string? RecycledProducts { get; set; }
     
     // The list of Material IDs to associate with this center
     public List<string> MaterialIds { get; set; } = [];

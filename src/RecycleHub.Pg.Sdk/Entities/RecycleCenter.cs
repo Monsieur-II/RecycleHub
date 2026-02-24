@@ -16,5 +16,6 @@ public class RecycleCenter : BaseEntity
     public double Longitude { get; set; }
     public bool IsVerified { get; set; }
     public bool IsActive { get; set; }
+    public string? RecycledProducts { get; set; }
     public ICollection<Material> Materials { get; set; } = new List<Material>();
 }
