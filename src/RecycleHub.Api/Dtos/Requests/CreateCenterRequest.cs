@@ -35,6 +35,7 @@ public class UpdateRecycleCenterRequest
     public string? Region { get; set; }
     public double Latitude { get; set; }
     public double Longitude { get; set; }
+    public string? RecycledProducts { get; set; }
 
     public List<string> MaterialIds { get; set; } = [];
 }

@@ -119,6 +119,7 @@ public class RecyclingCenterService(ILogger<RecyclingCenterService> logger,
             center.WebsiteUrl = request.WebsiteUrl;
             center.City = request.City;
             center.Region = request.Region;
+            center.RecycledProducts = request.RecycledProducts;
 
             var validMaterials = (await unitOfWork.Materials
                 .GetAllAsync(m => request.MaterialIds.Contains(m.Id), ct: ct)).ToList();
