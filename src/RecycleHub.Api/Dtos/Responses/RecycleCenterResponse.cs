@@ -16,8 +16,13 @@ public class RecycleCenterResponse
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public string? RecycledProducts { get; set; }
+    public string? OpeningHours { get; set; }
+    public string? Certifications { get; set; }
+    public double AverageRating { get; set; }
+    public int ReviewCount { get; set; }
     public List<MaterialResponse> Materials { get; set; } = [];
-};
+    public List<PhotoResponse> Photos { get; set; } = [];
+}
 
 public class MaterialResponse
 {

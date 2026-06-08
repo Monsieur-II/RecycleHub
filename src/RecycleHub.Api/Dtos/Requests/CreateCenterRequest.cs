@@ -15,8 +15,8 @@ public class CreateRecycleCenterRequest
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public string? RecycledProducts { get; set; }
-    
-    // The list of Material IDs to associate with this center
+    public string? OpeningHours { get; set; }
+    public string? Certifications { get; set; }
     public List<string> MaterialIds { get; set; } = [];
 }
 
@@ -36,7 +36,8 @@ public class UpdateRecycleCenterRequest
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public string? RecycledProducts { get; set; }
-
+    public string? OpeningHours { get; set; }
+    public string? Certifications { get; set; }
     public List<string> MaterialIds { get; set; } = [];
 }
 

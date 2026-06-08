@@ -1,8 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RecycleHub.Api.Dtos.Requests;
 using RecycleHub.Api.Dtos.Responses;
 using RecycleHub.Api.Services.Interfaces;
-using RecycleHub.Pg.Sdk;
 using RecycleHub.Pg.Sdk.Dtos;
 using RecycleHub.Utils;
 
@@ -16,8 +16,7 @@ public class RecyclingCentersController(IRecyclingCenterService service) : Contr
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<PagedResponse<RecycleCenterResponse>>))]
     public async Task<IActionResult> GetCenters([FromQuery] CenterFilter filter)
     {
-        var response = await service.GetAllAsync(filter, Request.HttpContext.RequestAborted);
-
+        var response = await service.GetAllAsync(filter, HttpContext.RequestAborted);
         return StatusCode(response.Code, response);
     }
 
@@ -26,26 +25,35 @@ public class RecyclingCentersController(IRecyclingCenterService service) : Contr
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<RecycleCenterResponse>))]
     public async Task<IActionResult> GetCenterById([FromRoute] string id)
     {
-        var response = await service.GetByIdAsync(id, Request.HttpContext.RequestAborted);
-
+        var response = await service.GetByIdAsync(id, HttpContext.RequestAborted);
         return StatusCode(response.Code, response);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ApiResponse<bool>))]
     public async Task<IActionResult> CreateCenter([FromBody] CreateRecycleCenterRequest request)
     {
-        var response = await service.CreateAsync(request, Request.HttpContext.RequestAborted);
-
+        var response = await service.CreateAsync(request, HttpContext.RequestAborted);
         return StatusCode(response.Code, response);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<bool>))]
     public async Task<IActionResult> UpdateCenter([FromBody] UpdateRecycleCenterRequest request)
     {
-        var response = await service.UpdateAsync(request, Request.HttpContext.RequestAborted);
+        var response = await service.UpdateAsync(request, HttpContext.RequestAborted);
+        return StatusCode(response.Code, response);
+    }
 
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<bool>))]
+    public async Task<IActionResult> DeleteCenter([FromRoute] string id)
+    {
+        var response = await service.DeleteAsync(id, HttpContext.RequestAborted);
         return StatusCode(response.Code, response);
     }
 }

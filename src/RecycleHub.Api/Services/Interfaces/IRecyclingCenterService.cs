@@ -8,10 +8,8 @@ namespace RecycleHub.Api.Services.Interfaces;
 public interface IRecyclingCenterService
 {
     Task<ApiResponse<PagedResponse<RecycleCenterResponse>>> GetAllAsync(CenterFilter filter, CancellationToken ct = default);
-
     Task<ApiResponse<RecycleCenterResponse>> GetByIdAsync(string id, CancellationToken ct = default);
-
     Task<ApiResponse<bool>> CreateAsync(CreateRecycleCenterRequest request, CancellationToken ct = default);
-
     Task<ApiResponse<bool>> UpdateAsync(UpdateRecycleCenterRequest request, CancellationToken ct = default);
+    Task<ApiResponse<bool>> DeleteAsync(string id, CancellationToken ct = default);
 }

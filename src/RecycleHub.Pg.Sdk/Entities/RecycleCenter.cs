@@ -17,5 +17,13 @@ public class RecycleCenter : BaseEntity
     public bool IsVerified { get; set; }
     public bool IsActive { get; set; }
     public string? RecycledProducts { get; set; }
+    public string? OpeningHours { get; set; }
+    public string? Certifications { get; set; }
+    public double AverageRating { get; set; }
+    public int ReviewCount { get; set; }
+
     public ICollection<Material> Materials { get; set; } = new List<Material>();
+    public ICollection<Review> Reviews { get; set; } = new List<Review>();
+    public ICollection<Photo> Photos { get; set; } = new List<Photo>();
+    public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
 }

@@ -2,8 +2,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy solution and project files
+# Copy solution, NuGet config, and project files
 COPY ReceycleHub.sln ./
+COPY Nuget.config ./
 COPY src/RecycleHub.Api/RecycleHub.Api.csproj src/RecycleHub.Api/
 COPY src/RecycleHub.Pg.Sdk/RecycleHub.Pg.Sdk.csproj src/RecycleHub.Pg.Sdk/
 COPY src/RecycleHub.Utils/RecycleHub.Utils.csproj src/RecycleHub.Utils/

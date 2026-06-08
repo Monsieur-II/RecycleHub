@@ -12,7 +12,8 @@ using RecycleHub.Utils.Extensions;
 
 namespace RecycleHub.Api.Services.Providers;
 
-public class RecyclingCenterService(ILogger<RecyclingCenterService> logger,
+public class RecyclingCenterService(
+    ILogger<RecyclingCenterService> logger,
     IUnitOfWork unitOfWork) : IRecyclingCenterService
 {
     public async Task<ApiResponse<PagedResponse<RecycleCenterResponse>>> GetAllAsync(CenterFilter filter, CancellationToken ct = default)
@@ -22,25 +23,54 @@ public class RecyclingCenterService(ILogger<RecyclingCenterService> logger,
             var predicate = PredicateBuilder.True<RecycleCenter>();
 
             if (!string.IsNullOrWhiteSpace(filter.MaterialId))
-            {
                 predicate = predicate.And(x => x.Materials.Any(m => m.Id == filter.MaterialId));
-            }
-            
+
             if (!string.IsNullOrWhiteSpace(filter.Search))
                 predicate = predicate.And(x => x.Name.ToLower().Contains(filter.Search.ToLower()));
-            
-            
-            var result = await unitOfWork.RecycleCenters.GetRecycleCentersAsync<RecycleCenterResponse>(filter, predicate,  ct: ct);
-            
-            
-            var response = GetCloseByCenters(filter, result);
 
-            return response.ToApiResponse("Success",StatusCodes.Status200OK);
+            var hasGeoFilter = filter is { Latitude: not null, Longitude: not null };
+
+            if (hasGeoFilter)
+            {
+                var lat = filter.Latitude!.Value;
+                var lon = filter.Longitude!.Value;
+                var latDelta = filter.Radius / 111.0;
+                var lonDelta = filter.Radius / (111.0 * Math.Cos(lat * Math.PI / 180.0));
+
+                predicate = predicate.And(x =>
+                    x.Latitude >= lat - latDelta && x.Latitude <= lat + latDelta &&
+                    x.Longitude >= lon - lonDelta && x.Longitude <= lon + lonDelta);
+
+                var dbContext = (ApplicationDbContext)unitOfWork.GetDbContext();
+                var boundingBoxResults = await dbContext.RecycleCenters
+                    .AsNoTracking()
+                    .Where(predicate)
+                    .Include(x => x.Materials)
+                    .Include(x => x.Photos)
+                    .ProjectToType<RecycleCenterResponse>()
+                    .ToListAsync(ct);
+
+                var filtered = boundingBoxResults
+                    .Where(c => UtilityConstants.CalculateDistance(c.Latitude, c.Longitude, lat, lon) <= filter.Radius)
+                    .ToList();
+
+                var paged = filtered
+                    .Skip((filter.PageIndex - 1) * filter.PageSize)
+                    .Take(filter.PageSize)
+                    .ToList();
+
+                var response = paged.ToPagedResponse(filter.PageIndex, filter.PageSize, filtered.Count);
+                return response.ToApiResponse("Success", StatusCodes.Status200OK);
+            }
+
+            var result = await unitOfWork.RecycleCenters
+                .GetRecycleCentersAsync<RecycleCenterResponse>(filter, predicate, ct: ct);
+
+            return result.ToApiResponse("Success", StatusCodes.Status200OK);
         }
         catch (Exception e)
         {
             logger.LogError(e, "Error fetching recycle centers: {Message}", e.Message);
-            
             return ApiResponse<PagedResponse<RecycleCenterResponse>>.Fail();
         }
     }
@@ -51,13 +81,11 @@ public class RecyclingCenterService(ILogger<RecyclingCenterService> logger,
         {
             var center = await unitOfWork.RecycleCenters.GetByIdAsync(
                 x => x.Id == id,
-                include: q => q.Include(c => c.Materials).AsNoTracking(),
+                include: q => q.Include(c => c.Materials).Include(c => c.Photos).AsNoTracking(),
                 ct: ct);
 
             if (center == null)
-            {
                 return ApiResponse<RecycleCenterResponse>.Fail("Center not found", StatusCodes.Status404NotFound);
-            }
 
             var response = center.Adapt<RecycleCenterResponse>();
             return response.ToApiResponse("Success", StatusCodes.Status200OK);
@@ -68,35 +96,33 @@ public class RecyclingCenterService(ILogger<RecyclingCenterService> logger,
             return ApiResponse<RecycleCenterResponse>.Fail();
         }
     }
-    
+
     public async Task<ApiResponse<bool>> CreateAsync(CreateRecycleCenterRequest request, CancellationToken ct = default)
     {
         try
         {
             var center = request.Adapt<RecycleCenter>();
-            
+
             if (request.MaterialIds.Count != 0)
             {
                 var materials = await unitOfWork.Materials
                     .GetAllAsync(m => request.MaterialIds.Contains(m.Id), ct: ct);
 
                 center.Materials = materials.ToList();
-                
                 unitOfWork.GetDbContext().AttachRange(center.Materials);
             }
-            
+
             await unitOfWork.RecycleCenters.AddAsync(center, saveChanges: true, ct: ct);
-            
+
             return true.ToApiResponse("Recycle Center created successfully", StatusCodes.Status201Created);
         }
         catch (Exception e)
         {
             logger.LogError(e, "Error creating recycle center: {Message}", e.Message);
-            
             return ApiResponse<bool>.Fail("Failed to create recycle center");
         }
     }
-    
+
     public async Task<ApiResponse<bool>> UpdateAsync(UpdateRecycleCenterRequest request, CancellationToken ct = default)
     {
         try
@@ -104,9 +130,9 @@ public class RecyclingCenterService(ILogger<RecyclingCenterService> logger,
             var center = await unitOfWork.RecycleCenters
                 .GetByIdAsync(x => x.Id == request.Id, include: q => q.Include(c => c.Materials), ct: ct);
 
-            if (center == null) 
+            if (center == null)
                 return ApiResponse<bool>.Fail("Center not found", StatusCodes.Status404NotFound);
-            
+
             center.Name = request.Name;
             center.Address = request.Address;
             center.Description = request.Description;
@@ -120,19 +146,20 @@ public class RecyclingCenterService(ILogger<RecyclingCenterService> logger,
             center.City = request.City;
             center.Region = request.Region;
             center.RecycledProducts = request.RecycledProducts;
+            center.OpeningHours = request.OpeningHours;
+            center.Certifications = request.Certifications;
+            center.UpdatedAt = DateTime.UtcNow;
 
             var validMaterials = (await unitOfWork.Materials
                 .GetAllAsync(m => request.MaterialIds.Contains(m.Id), ct: ct)).ToList();
-            
+
             if (validMaterials.Count != request.MaterialIds.Count)
-            {
                 return ApiResponse<bool>.Fail("One or more Material IDs are invalid", StatusCodes.Status400BadRequest);
-            }
+
+            center.Materials.Clear();
 
             foreach (var material in validMaterials)
             {
-                if (center.Materials.Any(m => m.Id == material.Id)) continue;
-                
                 var tracked = unitOfWork.GetDbContext().ChangeTracker.Entries<Material>()
                     .FirstOrDefault(e => e.Entity.Id == material.Id)?.Entity;
 
@@ -144,62 +171,36 @@ public class RecyclingCenterService(ILogger<RecyclingCenterService> logger,
                     center.Materials.Add(material);
                 }
             }
-            
-            
-
-            foreach (var material in validMaterials)
-            {
-                // Check if THIS EXACT material instance is already in the tracker from the 'Include'
-                var trackedEntry = unitOfWork.GetDbContext().ChangeTracker.Entries<Material>()
-                    .FirstOrDefault(e => e.Entity.Id == material.Id);
-
-                if (trackedEntry != null)
-                {
-                    // Use the one EF already knows about
-                    center.Materials.Add(trackedEntry.Entity);
-                }
-                else
-                {
-                    unitOfWork.GetDbContext().Attach(material);
-                    center.Materials.Add(material);
-                }
-            }
 
             await unitOfWork.SaveChangesAsync();
 
-            return true.ToApiResponse("Recycle Centers updated successfully", StatusCodes.Status200OK);
+            return true.ToApiResponse("Recycle Center updated successfully", StatusCodes.Status200OK);
         }
         catch (Exception e)
         {
             logger.LogError(e, "Error updating center {Id}: {Message}", request.Id, e.Message);
-            
             return ApiResponse<bool>.Fail("Failed to update recycle center");
         }
     }
 
-    private static PagedResponse<RecycleCenterResponse> GetCloseByCenters(CenterFilter filter, PagedResponse<RecycleCenterResponse> pagedRecycleCenters)
+    public async Task<ApiResponse<bool>> DeleteAsync(string id, CancellationToken ct = default)
     {
-        var recycleCenters = pagedRecycleCenters.Results.ToList();   
-        var closeByCenters = new List<RecycleCenterResponse>();
-        
-        if (filter is not { Longitude: not null, Latitude: not null })
+        try
         {
-            return pagedRecycleCenters;
-        }
-        
-        var lon = filter.Longitude!.Value;
-        var lat = filter.Latitude!.Value;
+            var center = await unitOfWork.RecycleCenters.GetByIdAsync(id, ct);
+            if (center == null)
+                return ApiResponse<bool>.Fail("Center not found", StatusCodes.Status404NotFound);
 
-        foreach (var center in recycleCenters)
+            center.IsDeleted = true;
+            center.UpdatedAt = DateTime.UtcNow;
+            await unitOfWork.RecycleCenters.UpdateAsync(center, saveChanges: true, ct: ct);
+
+            return true.ToApiResponse("Center deleted successfully", StatusCodes.Status200OK);
+        }
+        catch (Exception e)
         {
-            double distance = UtilityConstants.CalculateDistance(center.Latitude, center.Longitude, lat, lon);
-
-            if (distance <= filter.Radius)
-            {
-                closeByCenters.Add(center);
-            }
+            logger.LogError(e, "Error deleting center {Id}: {Message}", id, e.Message);
+            return ApiResponse<bool>.Fail("Failed to delete recycle center");
         }
-        
-        return closeByCenters.ToPagedResponse( filter.PageIndex, filter.PageSize, recycleCenters.Count);
     }
 }

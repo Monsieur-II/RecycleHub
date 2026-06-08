@@ -1,7 +1,4 @@
-using System.ComponentModel.DataAnnotations.Schema;
-using RecycleHub.Pg.Sdk;
 using RecycleHub.Pg.Sdk.Dtos;
-using RecycleHub.Pg.Sdk.Entities;
 
 namespace RecycleHub.Api.Dtos.Requests;
 

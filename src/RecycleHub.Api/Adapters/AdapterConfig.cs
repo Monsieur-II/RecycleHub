@@ -13,9 +13,15 @@ public class AdapterConfig : IRegister
             {
                 Id = m.Id,
                 Name = m.Name,
-            }));
-            
-        // You can add more mappings here for other entities
-        // config.NewConfig<User, UserResponse>().Map(...)
+            }))
+            .Map(dest => dest.Photos, src => src.Photos
+                .OrderBy(p => p.SortOrder)
+                .Select(p => new PhotoResponse
+                {
+                    Id = p.Id,
+                    Url = p.Url,
+                    IsPrimary = p.IsPrimary,
+                    SortOrder = p.SortOrder,
+                }));
     }
 }

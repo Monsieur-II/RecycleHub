@@ -13,6 +13,7 @@ public static class DataLayerExtensions
 {
     public static void AddPostgres(this IServiceCollection services,
         IConfiguration configuration, string connectionString,
+        bool isDevelopment = false,
         ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
     {
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(configuration.GetConnectionString(connectionString));
@@ -22,13 +23,17 @@ public static class DataLayerExtensions
         services.AddDbContext<ApplicationDbContext>((_, options) =>
         {
             options.UseNpgsql(npgsqlDataSource,
-                    opts => { opts.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery); })
-                .EnableSensitiveDataLogging();
+                opts => { opts.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery); });
+
+            if (isDevelopment)
+                options.EnableSensitiveDataLogging();
         }, serviceLifetime);
-        
-        
+
         services.AddScoped<IPgRepository<RecycleCenter>, PgRepository<RecycleCenter>>();
         services.AddScoped<IPgRepository<Material>, PgRepository<Material>>();
+        services.AddScoped<IPgRepository<Review>, PgRepository<Review>>();
+        services.AddScoped<IPgRepository<Photo>, PgRepository<Photo>>();
+        services.AddScoped<IPgRepository<Favorite>, PgRepository<Favorite>>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
     }
 

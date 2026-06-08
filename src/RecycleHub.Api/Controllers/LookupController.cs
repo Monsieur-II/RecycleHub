@@ -1,7 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RecycleHub.Api.Dtos.Requests;
 using RecycleHub.Api.Services.Interfaces;
-using RecycleHub.Pg.Sdk;
 using RecycleHub.Pg.Sdk.Dtos;
 using RecycleHub.Utils;
 
@@ -15,17 +15,26 @@ public class LookupController(ILookUpService lookUpService) : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<List<LookUpResponse>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMaterials()
     {
-        var res = await lookUpService.GetMaterialsAsync();
-        
+        var res = await lookUpService.GetMaterialsAsync(HttpContext.RequestAborted);
         return StatusCode(res.Code, res);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("materials")]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateMaterial([FromBody] CreateMaterialRequest request)
     {
-        var res = await lookUpService.CreateMaterialAsync(request);
-        
+        var res = await lookUpService.CreateMaterialAsync(request, HttpContext.RequestAborted);
+        return StatusCode(res.Code, res);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("materials/{id}")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteMaterial([FromRoute] string id)
+    {
+        var res = await lookUpService.DeleteMaterialAsync(id, HttpContext.RequestAborted);
         return StatusCode(res.Code, res);
     }
 }
