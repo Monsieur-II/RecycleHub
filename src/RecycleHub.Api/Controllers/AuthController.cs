@@ -40,7 +40,7 @@ public class AuthController(IAuthService authService) : ControllerBase
         return StatusCode(response.Code, response);
     }
 
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     [HttpGet("profile")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<UserProfileResponse>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<UserProfileResponse>))]
@@ -51,7 +51,7 @@ public class AuthController(IAuthService authService) : ControllerBase
         return StatusCode(response.Code, response);
     }
 
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     [HttpPut("profile")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<UserProfileResponse>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<UserProfileResponse>))]

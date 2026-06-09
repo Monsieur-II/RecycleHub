@@ -1,3 +1,4 @@
+using System.Net;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,11 +10,11 @@ using RecycleHub.Utils;
 namespace RecycleHub.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(AuthenticationSchemes = "Bearer")]
 [Route("api/v1/[controller]")]
 public class FavoritesController(IFavoriteService favoriteService) : ControllerBase
 {
-    [HttpPost("{centerId}")]
+    [HttpPut("{centerId}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<bool>))]
     public async Task<IActionResult> Toggle([FromRoute] string centerId)

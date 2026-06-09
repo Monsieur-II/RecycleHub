@@ -29,7 +29,7 @@ public class RecyclingCentersController(IRecyclingCenterService service) : Contr
         return StatusCode(response.Code, response);
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin", AuthenticationSchemes = "Bearer")]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ApiResponse<bool>))]
     public async Task<IActionResult> CreateCenter([FromBody] CreateRecycleCenterRequest request)
@@ -38,7 +38,7 @@ public class RecyclingCentersController(IRecyclingCenterService service) : Contr
         return StatusCode(response.Code, response);
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin", AuthenticationSchemes = "Bearer")]
     [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<bool>))]
     public async Task<IActionResult> UpdateCenter([FromBody] UpdateRecycleCenterRequest request)
@@ -47,7 +47,7 @@ public class RecyclingCentersController(IRecyclingCenterService service) : Contr
         return StatusCode(response.Code, response);
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin", AuthenticationSchemes = "Bearer")]
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<bool>))]

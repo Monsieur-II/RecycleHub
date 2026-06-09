@@ -5,11 +5,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using RecycleHub.Api;
 using RecycleHub.Api.Middleware;
 using RecycleHub.Pg.Sdk;
 using RecycleHub.Pg.Sdk.Entities;
-
+const string BearerScheme = "Bearer";
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
@@ -27,7 +28,36 @@ config.Scan(Assembly.GetExecutingAssembly());
 var services = builder.Services;
 
 services.AddEndpointsApiExplorer();
-services.AddSwaggerGen();
+services.AddSwaggerGen(c =>
+{
+    c.AddSecurityDefinition(BearerScheme, new()
+    {
+        Description = $@"Enter '[Bearer]' [space] and then your token in the text input below.<br/>
+                      Example: '{"Bearer"} 12345abcdef'",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = BearerScheme
+    });
+
+    c.AddSecurityRequirement(new()
+    {
+        {
+            new()
+            {
+                Reference = new()
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = BearerScheme
+                },
+                Scheme = "oauth2",
+                Name = BearerScheme,
+                In = ParameterLocation.Header,
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 services.AddControllers();
 

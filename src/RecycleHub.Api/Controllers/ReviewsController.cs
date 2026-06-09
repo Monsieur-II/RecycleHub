@@ -13,7 +13,7 @@ namespace RecycleHub.Api.Controllers;
 [Route("api/v1/[controller]")]
 public class ReviewsController(IReviewService reviewService) : ControllerBase
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ApiResponse<ReviewResponse>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ApiResponse<ReviewResponse>))]
@@ -24,7 +24,7 @@ public class ReviewsController(IReviewService reviewService) : ControllerBase
         return StatusCode(response.Code, response);
     }
 
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<ReviewResponse>))]
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ApiResponse<ReviewResponse>))]
@@ -35,7 +35,7 @@ public class ReviewsController(IReviewService reviewService) : ControllerBase
         return StatusCode(response.Code, response);
     }
 
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ApiResponse<bool>))]
@@ -54,7 +54,7 @@ public class ReviewsController(IReviewService reviewService) : ControllerBase
         return StatusCode(response.Code, response);
     }
 
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     [HttpGet("user")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<PagedResponse<ReviewResponse>>))]
     public async Task<IActionResult> GetByUser([FromQuery] PageFilter filter)

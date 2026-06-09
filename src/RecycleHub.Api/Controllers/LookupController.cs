@@ -19,7 +19,7 @@ public class LookupController(ILookUpService lookUpService) : ControllerBase
         return StatusCode(res.Code, res);
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin", AuthenticationSchemes = "Bearer")]
     [HttpPost("materials")]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateMaterial([FromBody] CreateMaterialRequest request)
@@ -28,7 +28,7 @@ public class LookupController(ILookUpService lookUpService) : ControllerBase
         return StatusCode(res.Code, res);
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin", AuthenticationSchemes = "Bearer")]
     [HttpDelete("materials/{id}")]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
